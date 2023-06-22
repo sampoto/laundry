@@ -9,7 +9,12 @@ a:hover { color: #098809; text-decoration: underline }
   function pdfConverter() {
     var form = document.getElementById("pdfop");
     var seln = document.getElementById("pdfOperation");
-    converter(form, seln)
+    var dpi = document.getElementById("pdf_dpi");
+    var args = [];
+    if (seln.value === "pdf/pdf2pdfa") {
+      args.push({key: "dpi", value: parseInt(dpi.value).toString()});
+    }
+    converter(form, seln, args)
   }
 
   function imageConverter() {
@@ -44,14 +49,15 @@ a:hover { color: #098809; text-decoration: underline }
     xhr.send(formData);
   }
 
-  function converter(form, seln) {
+  function converter(form, seln, args) {
     var formData = new FormData(form);
     var xhr = new XMLHttpRequest();
     if (form[0].files.length != 1) {
       alert("Select a file first");
       return;
     }
-    xhr.open("POST", seln.value, true);
+    var argsString = args && args.length ? "?" + args.map(function(arg) { return arg.key + "=" + encodeURIComponent(arg.value) }).join("&") : ""
+    xhr.open("POST", seln.value + argsString, true);
     xhr.responseType = "blob";
     xhr.onload = function(e) {
       var urlsource= window.URL || window.webkitURL;
@@ -76,6 +82,7 @@ a:hover { color: #098809; text-decoration: underline }
        <option value="pdf/pdf2txt">to text
      </select>
    </p>
+   <input type="number" id="pdf_dpi" name="dpi" value="720"> DPI
    <form id="pdfop">
    <input type="file" name="file">
    <input type="button" value="Convert" onclick="pdfConverter()">
